@@ -29,7 +29,7 @@ import android.os.RemoteException;
 import android.util.Log;
 
 public class BluetoothHDPService extends Service {
-	private static final String TAG = "HSSHDP";
+	private static final String TAG = "HDP";
 
 	public static final int RESULT_OK = 0;
 	public static final int RESULT_FAIL = -1;
@@ -80,7 +80,8 @@ public class BluetoothHDPService extends Service {
 		return configs.contains(config);
 	}
 
-	private BluetoothHealthAppConfiguration getDeviceConfiguration(BluetoothDevice dev) {
+	private BluetoothHealthAppConfiguration getDeviceConfiguration(
+			BluetoothDevice dev) {
 		if (!deviceconfigs.containsKey(dev)) {
 			if (configs.size() > 0) {
 				return configs.get(0);
@@ -91,13 +92,14 @@ public class BluetoothHDPService extends Service {
 		return deviceconfigs.get(dev);
 	}
 
-	private synchronized void insertDeviceConfiguration(BluetoothDevice dev, BluetoothHealthAppConfiguration config) {
+	private synchronized void insertDeviceConfiguration(BluetoothDevice dev,
+			BluetoothHealthAppConfiguration config) {
 		deviceconfigs.put(dev, config);
 	}
 
 	private int getChannelId(BluetoothDevice dev) {
 		if (!channelIds.containsKey(dev)) {
-			Log.w(TAG, "No channel id for dev " + dev.getAddress());
+			Log.i(TAG, "No channel id for dev " + dev.getAddress());
 			return 1;
 		}
 		return channelIds.get(dev);
@@ -109,13 +111,14 @@ public class BluetoothHDPService extends Service {
 
 	private FileOutputStream getWriter(BluetoothDevice dev) {
 		if (!writers.containsKey(dev)) {
-			Log.w(TAG, "No writer fd for dev " + dev.getAddress());
+			Log.i(TAG, "No writer fd for dev " + dev.getAddress());
 			return null;
 		}
 		return writers.get(dev);
 	}
 
-	private synchronized void insertWriter(BluetoothDevice dev, FileOutputStream writer) {
+	private synchronized void insertWriter(BluetoothDevice dev,
+			FileOutputStream writer) {
 		writers.put(dev, writer);
 	}
 
@@ -138,7 +141,7 @@ public class BluetoothHDPService extends Service {
 			// Register UI client to this service so the client can receive
 			// messages.
 			case MSG_REG_CLIENT:
-				Log.w(TAG, "Activity client registered");
+				Log.i(TAG, "Activity client registered");
 				mClient = msg.replyTo;
 				break;
 			// Unregister UI client from this service.
@@ -186,8 +189,9 @@ public class BluetoothHDPService extends Service {
 			stopSelf();
 			return;
 		}
-		if (!mBluetoothAdapter.getProfileProxy(this, mBluetoothServiceListener, BluetoothProfile.HEALTH)) {
-			Log.w(TAG, "Bluetooth profile not available");
+		if (!mBluetoothAdapter.getProfileProxy(this, mBluetoothServiceListener,
+				BluetoothProfile.HEALTH)) {
+			Log.i(TAG, "Bluetooth profile not available");
 			stopSelf();
 			return;
 		}
@@ -195,18 +199,25 @@ public class BluetoothHDPService extends Service {
 
 	@Override
 	public int onStartCommand(Intent intent, int flags, int startId) {
-		Log.w(TAG, "BluetoothHDPService is running.");
+		Log.i(TAG, "BluetoothHDPService is running.");
 		return START_STICKY;
 	}
 
 	@Override
 	public IBinder onBind(Intent intent) {
+		Log.d(TAG, "BluetoothHDPService开始绑定！");
 		return mMessenger.getBinder();
-	};
+	}
+
+	@Override
+	public boolean onUnbind(Intent intent) {
+		return super.onUnbind(intent);
+	}
 
 	// Register health application through the Bluetooth Health API.
 	private void registerApp(int dataType) {
-		mBluetoothHealth.registerSinkAppConfiguration(TAG, dataType, mHealthCallback);
+		mBluetoothHealth.registerSinkAppConfiguration(TAG, dataType,
+				mHealthCallback);
 	}
 
 	// Unregister health application through the Bluetooth Health API.
@@ -218,7 +229,7 @@ public class BluetoothHDPService extends Service {
 
 	// Connect channel through the Bluetooth Health API.
 	private void connectChannel(BluetoothDevice dev) {
-		Log.w(TAG, "connectChannel()");
+		Log.i(TAG, "connectChannel()");
 		BluetoothHealthAppConfiguration app = getDeviceConfiguration(dev);
 		if (app != null)
 			mBluetoothHealth.connectChannelToSource(dev, app);
@@ -226,24 +237,24 @@ public class BluetoothHDPService extends Service {
 
 	// Send data
 	private void sendData(BluetoothDevice dev, byte[] data) {
-		Log.w(TAG, "HDP sending data");
+		Log.i(TAG, "HDP sending data");
 		FileOutputStream writer = getWriter(dev);
 		if (writer == null) {
-			Log.w(TAG, "Could not send data to HDP (no stream)");
+			Log.i(TAG, "Could not send data to HDP (no stream)");
 			return;
 		}
 		try {
 			writer.write(data);
-			Log.w(TAG, "HDP sent data " + data.length);
+			Log.i(TAG, "HDP sent data " + data.length);
 		} catch (IOException e) {
 			removeWriter(dev);
-			Log.w(TAG, "Could not send data to HDP");
+			Log.i(TAG, "Could not send data to HDP");
 		}
 	}
 
 	// Disconnect channel through the Bluetooth Health API.
 	private void disconnectChannel(BluetoothDevice dev) {
-		Log.w(TAG, "disconnectChannel()");
+		Log.i(TAG, "disconnectChannel()");
 		BluetoothHealthAppConfiguration app = getDeviceConfiguration(dev);
 		if (app != null)
 			mBluetoothHealth.disconnectChannel(dev, app, getChannelId(dev));
@@ -255,7 +266,7 @@ public class BluetoothHDPService extends Service {
 		public void onServiceConnected(int profile, BluetoothProfile proxy) {
 			if (profile == BluetoothProfile.HEALTH) {
 				mBluetoothHealth = (BluetoothHealth) proxy;
-				Log.w(TAG, "onServiceConnected to profile: " + profile);
+				Log.i(TAG, "onServiceConnected to profile: " + profile);
 			}
 		}
 
@@ -269,32 +280,44 @@ public class BluetoothHDPService extends Service {
 
 	private final BluetoothHealthCallback mHealthCallback = new BluetoothHealthCallback() {
 		@Override
-		public void onHealthAppConfigurationStatusChange(BluetoothHealthAppConfiguration config, int status) {
+		public void onHealthAppConfigurationStatusChange(
+				BluetoothHealthAppConfiguration config, int status) {
 			if (status == BluetoothHealth.APP_CONFIG_REGISTRATION_FAILURE) {
 				sendMessage(STATUS_HEALTH_APP_REG, RESULT_FAIL, null);
 			} else if (status == BluetoothHealth.APP_CONFIG_REGISTRATION_SUCCESS) {
 				configs.add(config);
 				sendMessage(STATUS_HEALTH_APP_REG, RESULT_OK, null);
-			} else if (status == BluetoothHealth.APP_CONFIG_UNREGISTRATION_FAILURE || status == BluetoothHealth.APP_CONFIG_UNREGISTRATION_SUCCESS) {
-				sendMessage(STATUS_HEALTH_APP_UNREG, status == BluetoothHealth.APP_CONFIG_UNREGISTRATION_SUCCESS ? RESULT_OK : RESULT_FAIL, null);
+			} else if (status == BluetoothHealth.APP_CONFIG_UNREGISTRATION_FAILURE
+					|| status == BluetoothHealth.APP_CONFIG_UNREGISTRATION_SUCCESS) {
+				sendMessage(
+						STATUS_HEALTH_APP_UNREG,
+						status == BluetoothHealth.APP_CONFIG_UNREGISTRATION_SUCCESS ? RESULT_OK
+								: RESULT_FAIL, null);
 			}
 		}
 
 		@Override
-		public void onHealthChannelStateChange(BluetoothHealthAppConfiguration config, BluetoothDevice device, int prevState, int newState, ParcelFileDescriptor fd, int channelId) {
-			Log.w(TAG, String.format("prevState\t%d ----------> newState\t%d", prevState, newState));
-			if (prevState == BluetoothHealth.STATE_CHANNEL_DISCONNECTED && newState == BluetoothHealth.STATE_CHANNEL_CONNECTED) {
+		public void onHealthChannelStateChange(
+				BluetoothHealthAppConfiguration config, BluetoothDevice device,
+				int prevState, int newState, ParcelFileDescriptor fd,
+				int channelId) {
+			Log.i(TAG, String.format("prevState\t%d ----------> newState\t%d",
+					prevState, newState));
+			if (prevState == BluetoothHealth.STATE_CHANNEL_DISCONNECTED
+					&& newState == BluetoothHealth.STATE_CHANNEL_CONNECTED) {
 				if (acceptsConfiguration(config)) {
 					insertDeviceConfiguration(device, config);
 					insertChannelId(device, channelId);
 					sendMessage(STATUS_CREATE_CHANNEL, RESULT_OK, device);
-					FileOutputStream wr = new FileOutputStream(fd.getFileDescriptor());
+					FileOutputStream wr = new FileOutputStream(
+							fd.getFileDescriptor());
 					insertWriter(device, wr);
 					(new ReadThread(device, fd)).start();
 				} else {
 					sendMessage(STATUS_CREATE_CHANNEL, RESULT_FAIL, device);
 				}
-			} else if (prevState == BluetoothHealth.STATE_CHANNEL_CONNECTING && newState == BluetoothHealth.STATE_CHANNEL_DISCONNECTED) {
+			} else if (prevState == BluetoothHealth.STATE_CHANNEL_CONNECTING
+					&& newState == BluetoothHealth.STATE_CHANNEL_DISCONNECTED) {
 				sendMessage(STATUS_CREATE_CHANNEL, RESULT_FAIL, device);
 				removeWriter(device);
 			} else if (newState == BluetoothHealth.STATE_CHANNEL_DISCONNECTED) {
@@ -312,7 +335,7 @@ public class BluetoothHDPService extends Service {
 	// Sends an update message to registered client.
 	private void sendMessage(int what, int value, Object obj) {
 		if (mClient == null) {
-			Log.w(TAG, "No clients registered.");
+			Log.i(TAG, "No clients registered.");
 			return;
 		}
 
@@ -346,7 +369,7 @@ public class BluetoothHDPService extends Service {
 					if (len > 0) {
 						byte[] buf = new byte[len];
 						System.arraycopy(data, 0, buf, 0, len);
-						Log.w(TAG, "Reader thread");
+						Log.i(TAG, "Reader thread");
 						Object[] pair = new Object[2];
 						pair[0] = mDev;
 						pair[1] = buf;

@@ -7,5 +7,10 @@ package com.yixin.monitors.sdk.api;
  * 
  */
 public interface ApiMonitor extends Connectable {
+	/**
+	 * 设置蓝牙回调监听
+	 * 
+	 * @param listener
+	 */
 	void setBluetoothListener(BluetoothListener listener);
 }
