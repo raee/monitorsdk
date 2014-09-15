@@ -1,8 +1,8 @@
 package com.yixin.monitors.sdk.api;
 
-import com.yixin.monitors.sdk.model.PackageModel;
-
 import android.bluetooth.BluetoothDevice;
+
+import com.yixin.monitors.sdk.model.PackageModel;
 
 /**
  * 蓝牙回调接口
@@ -21,6 +21,15 @@ public interface BluetoothListener {
 	 * 未知异常
 	 */
 	public static final int	ERROR_CODE_UNKNOWN		= 0;
+	/**
+	 * 没找到设备
+	 */
+	public static final int	ERROR_NOT_FOND			= -3;
+	
+	/**
+	 * 连接超时
+	 */
+	public static final int	ERROR_TIME_OUT			= -4;
 	/**
 	 * 发送数据异常
 	 */

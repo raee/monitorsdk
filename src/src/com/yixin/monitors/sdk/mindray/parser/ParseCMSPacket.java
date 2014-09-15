@@ -37,6 +37,7 @@ public class ParseCMSPacket implements PackageParseIntf {
 	/*
 	 * 解析整个包
 	 */
+	@Override
 	public FinishPackageData parsePacket(CMSPacketStream mStream) {
 		this.stream = mStream;
 		ECGLeadType generalData = null;
@@ -49,7 +50,7 @@ public class ParseCMSPacket implements PackageParseIntf {
 		FinishPackageData finishData = new FinishPackageData();
 		List<litPackDataType> litPack = new ArrayList<FinishPackageData.litPackDataType>();
 		for (int i = 0; i < packets.size(); i++) {
-			CMSPacket pack = (CMSPacket) packets.get(i);
+			CMSPacket pack = packets.get(i);
 			if (pack.getCommandID() == CMSDefine.CMD_ID_MEASURE_PARA_LIST) {
 				TestParameterData testData = parseTestParameterData(pack);
 				if (testData.getDataList().size() != 0) {

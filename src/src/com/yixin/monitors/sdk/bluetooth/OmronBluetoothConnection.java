@@ -2,7 +2,6 @@ package com.yixin.monitors.sdk.bluetooth;
 
 import android.bluetooth.BluetoothDevice;
 import android.content.Context;
-import android.util.Log;
 
 import com.signove.health.service.OmronXmlParser;
 import com.yixin.monitors.sdk.api.BluetoothListener;
@@ -30,7 +29,7 @@ public class OmronBluetoothConnection extends BluetoothConnection {
 	@Override
 	public void disconnect() {
 		super.disconnect();
-		getBluetoothManager().closeBluetooth(); // 关闭蓝牙
+//		getBluetoothManager().closeBluetooth(); // 关闭蓝牙
 	}
 
 	@Override

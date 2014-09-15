@@ -2,7 +2,6 @@ package com.yixin.monitors.sdk.mindray.parser;
 
 import com.yixin.monitors.sdk.api.IBluetoothSendable;
 import com.yixin.monitors.sdk.api.IDataParser;
-import com.yixin.monitors.sdk.bluetooth.SendBoradcastManager;
 import com.yixin.monitors.sdk.mindray.ModelConveter;
 import com.yixin.monitors.sdk.model.PackageModel;
 import com.yx.model.FinishPackageData;
@@ -176,17 +175,17 @@ public class CMSControl implements IDataParser {
 			// 是否为设备信息
 			if (packetStream.packetStreamType == CMSDefine.STREAM_TYPE_DEVICE) {
 				// 当前设备类型
-				int nDeviceType = 0;
-				if (packetStream.packets.size() > 0) {
-					CMSPacket packet = packetStream.packets.get(0);
-					if (packet.getCommandID() == CMSDefine.CMD_ID_DEVICE_BASE_INFO) {
-						if (packet.fileds.size() > 0) {
-							CMSPacket.Field field = packet.fileds.get(0);
-							nDeviceType = CMSPacket
-									.bufferToByte(field.value, 0);
-						}
-					}
-				}
+//				int nDeviceType = 0;
+//				if (packetStream.packets.size() > 0) {
+//					CMSPacket packet = packetStream.packets.get(0);
+//					if (packet.getCommandID() == CMSDefine.CMD_ID_DEVICE_BASE_INFO) {
+//						if (packet.fileds.size() > 0) {
+//							CMSPacket.Field field = packet.fileds.get(0);
+//							nDeviceType = CMSPacket
+//									.bufferToByte(field.value, 0);
+//						}
+//					}
+//				}
 
 				CMSPacketStream pksReturn = getSysdatePackets(null);
 				if (pksReturn != null) {

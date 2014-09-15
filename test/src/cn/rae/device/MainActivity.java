@@ -27,7 +27,7 @@ public class MainActivity extends Activity implements OnClickListener,
 		findViewById(R.id.btnCancle).setOnClickListener(this);
 
 		mindrayApi = MonitorSdkFactory.getApiMonitor(this,
-				MonitorSdkFactory.MINARAY);
+				MonitorSdkFactory.MINDRAY);
 
 		mindrayApi.setBluetoothListener(this);
 		//
