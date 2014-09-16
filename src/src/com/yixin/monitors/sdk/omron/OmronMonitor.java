@@ -98,7 +98,9 @@ public class OmronMonitor implements ApiMonitor {
 	
 	@Override
 	public void setBluetoothListener(BluetoothListener listener) {
-		this.mBluetoothListener = listener;
+		if (listener != mBluetoothListener) {
+			this.mBluetoothListener = listener;
+		}
 	}
 	
 	class BluetoothServiceConnection implements ServiceConnection {

@@ -1,6 +1,7 @@
 package com.yixin.monitors.sdk.model;
 
-import java.io.Serializable;
+import android.os.Parcel;
+import android.os.Parcelable;
 
 /**
  * 体征数据实体
@@ -8,32 +9,62 @@ import java.io.Serializable;
  * @author ChenRui
  * 
  */
-public class SignDataModel implements Serializable {
+public class SignDataModel implements Parcelable {
 	/**
 	 * 
 	 */
-	private static final long	serialVersionUID	= 3981448226950291143L;
+	//	private static final long	serialVersionUID	= 3981448226950291143L;
+	
+	public static Parcelable.Creator<SignDataModel>	CREATOR	= new Creator<SignDataModel>() {
+																
+																@Override
+																public SignDataModel[] newArray(int size) {
+																	return new SignDataModel[size];
+																}
+																
+																@Override
+																public SignDataModel createFromParcel(Parcel source) {
+																	SignDataModel model = new SignDataModel();
+																	source.readString();
+																	model.setDataName(source.readString());
+																	model.setValue(source.readString());
+																	model.setUnit(source.readString());
+																	model.setDate(source.readString());
+																	model.setDataType(source.readInt());
+																	
+																	return model;
+																}
+															};
+	
+	@Override
+	public void writeToParcel(Parcel dest, int flags) {
+		dest.writeString(dataName);
+		dest.writeString(value);
+		dest.writeString(unit);
+		dest.writeString(date);
+		dest.writeInt(dataType);
+	}
 	
 	/**
 	 * 数据类型名称
 	 */
-	private String				dataName;
+	private String	dataName;
 	
 	// 数据类型
-	private int					dataType;
+	private int		dataType;
 	
 	/**
 	 * 接收数据日期
 	 */
-	private String				date;
+	private String	date;
 	
 	/**
 	 * 单位
 	 */
-	private String				unit;
+	private String	unit;
 	
 	// 数据值
-	private Object				value;
+	private String	value;
 	
 	/**
 	 * 获取dataName
@@ -66,7 +97,7 @@ public class SignDataModel implements Serializable {
 	 * 
 	 * @return the value
 	 */
-	public Object getValue() {
+	public String getValue() {
 		return value;
 	}
 	
@@ -104,8 +135,13 @@ public class SignDataModel implements Serializable {
 	 * @param value
 	 *            设置 value 的值
 	 */
-	public void setValue(Object value) {
+	public void setValue(String value) {
 		this.value = value;
+	}
+	
+	@Override
+	public int describeContents() {
+		return 0;
 	}
 	
 }
