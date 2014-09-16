@@ -24,10 +24,6 @@ import com.yixin.monitors.sdk.model.SignDataModel;
  */
 public class OmronXmlParser implements IDataParser {
 	
-	private SignDataModel		mCurrentData	= null;							// 当前解析的数据
-	private List<SignDataModel>	mListData		= new ArrayList<SignDataModel>();	// 当前解析的数据列表
-	private PackageModel		mPackageData	= null;							// 解析后的数据
-																					
 	@SuppressLint("SimpleDateFormat")
 	public static String getCurrentDateTime() {
 		SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
@@ -37,7 +33,9 @@ public class OmronXmlParser implements IDataParser {
 	
 	@Override
 	public PackageModel parse(byte[] data) {
-		mPackageData = new PackageModel();
+		PackageModel mPackageData = new PackageModel();
+		List<SignDataModel> listDataModels = new ArrayList<SignDataModel>();	// 当前解析的数据列表
+		SignDataModel currentDataModel = null;							// 当前解析的数据
 		
 		try {
 			// 开始解析
@@ -55,34 +53,34 @@ public class OmronXmlParser implements IDataParser {
 						attrVal = p.getAttributeValue(null, "name");
 						// <meta name="metric-id">18949</meta>
 						if ("meta".equals(name) && "metric-id".equals(attrVal)) {
-							mCurrentData = new SignDataModel(); // 实例化当前解析数据对象
+							currentDataModel = new SignDataModel(); // 实例化当前解析数据对象
 						}
 						break;
 					case XmlPullParser.TEXT:
 						String text = p.getText().trim();
-						if (mCurrentData == null || text.length() <= 0) {
+						if (currentDataModel == null || text.length() <= 0) {
 							break;
 						}
 						else if ("18949".equals(text)) {
-							mCurrentData.setDataName("收缩压"); // 高压
-							mCurrentData.setUnit("mmHg");
+							currentDataModel.setDataName("收缩压"); // 高压
+							currentDataModel.setUnit("mmHg");
 						}
 						else if ("18950".equals(text)) {
-							mCurrentData.setDataName("舒张压"); // 低压
-							mCurrentData.setUnit("mmHg");
+							currentDataModel.setDataName("舒张压"); // 低压
+							currentDataModel.setUnit("mmHg");
 						}
 						else if ("18474".equals(text)) {
-							mCurrentData.setDataName("脉搏");
-							mCurrentData.setUnit("博/分");
+							currentDataModel.setDataName("脉搏");
+							currentDataModel.setUnit("博/分");
 						}
 						else if ("value".equals(name)) {
 							int val = (int) Float.parseFloat(text);
-							mCurrentData.setValue(String.valueOf(val)); // 设置体征值
-							mListData.add(mCurrentData);
-							mCurrentData = null;
+							currentDataModel.setValue(String.valueOf(val)); // 设置体征值
+							listDataModels.add(currentDataModel);
+							currentDataModel = null;
 						}
 						else if ("18951".equals(text) || "61458".equals(text)) {
-							mCurrentData = null;
+							currentDataModel = null;
 						}
 						
 						break;
@@ -100,7 +98,7 @@ public class OmronXmlParser implements IDataParser {
 			e.printStackTrace();
 		}
 		finally {
-			mPackageData.setSignDatas(mListData);
+			mPackageData.setSignDatas(listDataModels);
 		}
 		
 		return mPackageData;
