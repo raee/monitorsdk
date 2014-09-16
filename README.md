@@ -1,10 +1,10 @@
 #家庭监测设备蓝牙数据传输接口
-支持设备有：迈瑞H900、欧姆龙（HEM-7081-IT）、支持 IEEE 11073-20601 协议的设备。
-----
-##注意
-		源码仅供学习，请勿用作商业用途！！
-		欧姆龙底层协议根据[antidote](https://github.com/raee/antidote)
-----
+
+<p>支持设备有：迈瑞H900、欧姆龙（HEM-7081-IT）、支持 IEEE 11073-20601 协议的设备。</p>
+-----------------------------------
+##源码仅供学习，请勿用作商业用途！！
+欧姆龙底层协议根据开源[antidote](https://github.com/raee/antidote)库进行二次修改。
+
 ##需要使用的权限：
 <div class="cnblogs_code">
 <pre><span style="color: #0000ff;">&lt;</span><span style="color: #800000;">uses-permission </span><span style="color: #ff0000;">android:name</span><span style="color: #0000ff;">="android.permission.WRITE_EXTERNAL_STORAGE"</span> <span style="color: #0000ff;">/&gt;</span>
@@ -34,7 +34,6 @@ B、JNI库<br>
  <p>把libhealthd.so 添加到libs-armeabi中；</p>
  <p>添加aidl中的添加到build 中。</p>
 
-----
 ##创建接口
 		ApiMonitor mindrayApi = MonitorSdkFactory.getApiMonitor(this,MonitorSdkFactory.MINDRAY);
 ##数据回调
@@ -50,4 +49,3 @@ B、JNI库<br>
 		}
 		mindrayApi.disconnect(); // 断开连接
 
-----
