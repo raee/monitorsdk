@@ -1,0 +1,8 @@
+eclipse.preferences.version=1
+encoding//src/com/yixin/device/parser/mindray/CMSDefine.java=UTF-8
+encoding//src/com/yixin/device/parser/mindray/ECGFilteringWay.java=UTF-8
+encoding//src/com/yixin/device/parser/mindray/ECGGain.java=UTF-8
+encoding//src/com/yixin/device/parser/mindray/ECGWaveData.java=UTF-8
+encoding//src/com/yixin/device/parser/mindray/ParseCMSPacket.java=UTF-8
+encoding/<project>=UTF-8
+separateDerivedEncodings=true
