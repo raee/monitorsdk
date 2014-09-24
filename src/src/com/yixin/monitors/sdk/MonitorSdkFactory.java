@@ -6,6 +6,7 @@ import android.util.SparseArray;
 import com.yixin.monitors.sdk.api.ApiMonitor;
 import com.yixin.monitors.sdk.mindray.MindrayMonitor;
 import com.yixin.monitors.sdk.omron.OmronMonitor;
+import com.yixin.monitors.sdk.test.TestMonitor;
 
 /**
  * 监测设备工厂，由该工厂获取监测设备接口
@@ -27,6 +28,8 @@ public final class MonitorSdkFactory {
 	 */
 	public static final int							OMRON		= 1;
 	
+	public static final int							TEST		= -1;
+	
 	/**
 	 * 获取接口
 	 * 
@@ -41,6 +44,12 @@ public final class MonitorSdkFactory {
 			case OMRON:
 				if (result == null) {
 					result = new OmronMonitor(context);
+					Monitors.put(sdk, result);
+				}
+				break;
+			case TEST:
+				if (result == null) {
+					result = new TestMonitor();
 					Monitors.put(sdk, result);
 				}
 				break;

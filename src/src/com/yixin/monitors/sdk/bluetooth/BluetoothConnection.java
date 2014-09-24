@@ -10,6 +10,7 @@ import android.util.Log;
 import com.yixin.monitors.sdk.api.BluetoothListener;
 import com.yixin.monitors.sdk.api.Connectable;
 import com.yixin.monitors.sdk.api.IDataParser;
+import com.yixin.monitors.sdk.model.DeviceInfo;
 import com.yixin.monitors.sdk.model.PackageModel;
 
 /**
@@ -24,16 +25,14 @@ abstract class BluetoothConnection implements BluetoothListener, Connectable {
 	private BluetoothManager	mBluetoothManager;
 	private BluetoothListener	mBluetoothListener;
 	protected IDataParser		mDataParser;
-	protected boolean				mIsConnected	= false;					// 是否连接上设备！
+	protected boolean			mIsConnected	= false;					// 是否连接上设备！
 	private BluetoothDevice		mCurrentDevice;
+	private DeviceInfo			mDeviceInfo;
 	
-	public abstract String getDeviceName();
-	
-	public abstract String getDevicePin();
-	
-	public BluetoothConnection(Context context, BluetoothListener listener) {
+	public BluetoothConnection(Context context, DeviceInfo info, BluetoothListener listener) {
 		mBluetoothManager = new BluetoothManager(context);
 		mBluetoothManager.setBluetoothListener(this);
+		mDeviceInfo = info;
 		setBluetoothListener(listener);
 	}
 	
@@ -103,24 +102,10 @@ abstract class BluetoothConnection implements BluetoothListener, Connectable {
 			onError(0, getDeviceName() + "设备没有发现，请打开监测设备再试！");
 		}
 		mBluetoothListener.onStopDiscovery();
-		
-		// else if (!isConnected()) {
-		// Set<BluetoothDevice> devices = mBluetoothManager
-		// .getBluetoothAdapter().getBondedDevices();// 迭代，得到所有本机已保存的配对的蓝牙适配器对象
-		// for (BluetoothDevice bluetoothDevice : devices) {
-		// if (bluetoothDevice.getName().equals(getDeviceName())) {
-		// Log.i(TAG, "没有连接，重新配对连接...");
-		// BluetoothManager.removeBond(bluetoothDevice);
-		// // 扫描完成后还是没有连接上，并且已经配对了，取消后再次尝试。
-		// startDiscovery();
-		//
-		// break;
-		// }
-		// }
-		//
-		// onError(ERROR_CODE_UNKNOWN, "设备连接失败!");
-		// }
-		
+	}
+	
+	protected String getDeviceName() {
+		return mDeviceInfo.getDeviceName();
 	}
 	
 	@Override
@@ -158,6 +143,10 @@ abstract class BluetoothConnection implements BluetoothListener, Connectable {
 			return true;
 		}
 		return mBluetoothListener.onFindBluetooth(device, isBonded);
+	}
+	
+	private String getDevicePin() {
+		return mDeviceInfo.getDevicePin();
 	}
 	
 	@Override

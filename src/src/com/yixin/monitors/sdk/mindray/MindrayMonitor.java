@@ -10,13 +10,18 @@ import com.yixin.monitors.sdk.mindray.parser.CMSControl;
 import com.yixin.monitors.sdk.model.DeviceInfo;
 
 public class MindrayMonitor implements ApiMonitor {
-	
-	private static final String			Tag	= "MindrayMonitor";
+	public static String				DEVICE_NAME	= "mindray-ubicare";
+	public static String				DEVICE_PIN	= "4321";
+	private static final String			Tag			= "MindrayMonitor";
 	private Context						mContext;
 	private MindrayBluetoothConnection	mConnection;
+	private BluetoothListener			mBluetoothListener;
 	
 	public MindrayMonitor(Context context) {
 		this.mContext = context;
+		mDeviceInfo = new DeviceInfo();
+		mDeviceInfo.setDeviceName(DEVICE_NAME);
+		mDeviceInfo.setDevicePin(DEVICE_PIN);
 		Log.i(Tag, "Connect Device is Mindray!");
 		
 	}
@@ -27,15 +32,21 @@ public class MindrayMonitor implements ApiMonitor {
 			Log.i(Tag, getDeviceInfo().getDeviceName() + "已经连接！不需要连接！");
 			return;
 		}
-		if (mConnection != null) {
-			mConnection.connect();
+		if (mConnection == null) {
+			mConnection = new MindrayBluetoothConnection(mContext, getDeviceInfo(), mBluetoothListener);
+			CMSControl mDataParser = new CMSControl(mConnection.getBluetoothSendableInterface());
+			mConnection.setDataParser(mDataParser);
 		}
+		
+		mConnection.connect();
 	}
 	
 	@Override
 	public void disconnect() {
 		if (mConnection != null) {
 			mConnection.disconnect();
+			mConnection = null;
+			System.gc();
 		}
 	}
 	
@@ -47,22 +58,21 @@ public class MindrayMonitor implements ApiMonitor {
 	
 	@Override
 	public void setBluetoothListener(BluetoothListener listener) {
-		if (mConnection == null) {
-			mConnection = new MindrayBluetoothConnection(mContext, listener);
-			CMSControl mDataParser = new CMSControl(mConnection.getBluetoothSendableInterface());
-			mConnection.setDataParser(mDataParser);
-		}
+		this.mBluetoothListener = listener;
 	}
 	
 	private DeviceInfo	mDeviceInfo;
 	
 	@Override
 	public DeviceInfo getDeviceInfo() {
-		if (mDeviceInfo == null) {
-			mDeviceInfo = new DeviceInfo();
-			mDeviceInfo.setDevID("Mindray-H900");
-			mDeviceInfo.setDeviceName("迈瑞");
-		}
 		return mDeviceInfo;
+	}
+	
+	@Override
+	public void configDevice(String deviceName, String devicePin) {
+		DEVICE_NAME = deviceName;
+		DEVICE_PIN = devicePin;
+		mDeviceInfo.setDeviceName(deviceName);
+		mDeviceInfo.setDevicePin(devicePin);
 	}
 }

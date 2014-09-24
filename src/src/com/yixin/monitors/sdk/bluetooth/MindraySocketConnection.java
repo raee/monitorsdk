@@ -192,6 +192,10 @@ public class MindraySocketConnection extends AsyncTask<BluetoothDevice, byte[], 
 				e.printStackTrace();
 			}
 		}
+		else {
+			
+			Log.e(tag, "发送数据失败,蓝牙输出流为空。");
+		}
 	}
 	
 }

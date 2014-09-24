@@ -7,14 +7,15 @@ package com.yixin.monitors.sdk.model;
  * 
  */
 public class DeviceInfo {
-	private String	devID;
+	private String	deviceName;
+	private String	devicePin;
 	
-	public String getDevID() {
-		return devID;
+	public void setDevicePin(String devicePin) {
+		this.devicePin = devicePin;
 	}
 	
-	public void setDevID(String devID) {
-		this.devID = devID;
+	public String getDevicePin() {
+		return devicePin;
 	}
 	
 	public String getDeviceName() {
@@ -25,5 +26,4 @@ public class DeviceInfo {
 		this.deviceName = deviceName;
 	}
 	
-	private String	deviceName;
 }

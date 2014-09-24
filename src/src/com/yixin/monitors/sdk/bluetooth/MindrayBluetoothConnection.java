@@ -7,14 +7,12 @@ import android.util.Log;
 
 import com.yixin.monitors.sdk.api.BluetoothListener;
 import com.yixin.monitors.sdk.api.IBluetoothSendable;
+import com.yixin.monitors.sdk.model.DeviceInfo;
 import com.yixin.monitors.sdk.model.PackageModel;
 
 public class MindrayBluetoothConnection extends BluetoothConnection {
-	
-	public static final String		DEVICE_NAME	= "mindray-ubicare";
-	public static final String		DEVICE_PIN	= "4321";
 	private MindraySocketConnection	mSocketConnection;
-	private String					TAG			= "MindrayBluetoothConnection";
+	private String					TAG	= "MindrayBluetoothConnection";
 	
 	/**
 	 * 实例化后请记得设置数据解析接口，及socket连接
@@ -22,8 +20,8 @@ public class MindrayBluetoothConnection extends BluetoothConnection {
 	 * @param context
 	 * @param listener
 	 */
-	public MindrayBluetoothConnection(Context context, BluetoothListener listener) {
-		super(context, listener);
+	public MindrayBluetoothConnection(Context context, DeviceInfo info, BluetoothListener listener) {
+		super(context, info, listener);
 		mSocketConnection = new MindraySocketConnection(this);
 	}
 	
@@ -96,7 +94,7 @@ public class MindrayBluetoothConnection extends BluetoothConnection {
 	@Override
 	public void onOpenBluetooth() {
 		super.onOpenBluetooth();
-		startDiscovery();
+		connect();
 	}
 	
 	@Override
@@ -107,17 +105,8 @@ public class MindrayBluetoothConnection extends BluetoothConnection {
 			mSocketConnection.disconnect();
 			mSocketConnection = null;
 		}
-		//		getBluetoothManager().closeBluetooth();
-	}
-	
-	@Override
-	public String getDeviceName() {
-		return DEVICE_NAME;
-	}
-	
-	@Override
-	public String getDevicePin() {
-		return DEVICE_PIN;
+		
+		getBluetoothManager().closeBluetooth(); //关闭 蓝牙
 	}
 	
 }

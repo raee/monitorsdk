@@ -19,6 +19,9 @@ import com.yixin.monitors.sdk.bluetooth.OmronBluetoothConnection;
 import com.yixin.monitors.sdk.model.DeviceInfo;
 
 public class OmronMonitor implements ApiMonitor {
+	public static String		DEVICE_NAME			= "HEM-7081-IT";
+	public static String		DEVICE_PIN			= "";
+	
 	OmronBluetoothConnection	mConnection;
 	private Context				mContext;
 	private BluetoothListener	mBluetoothListener;
@@ -33,6 +36,9 @@ public class OmronMonitor implements ApiMonitor {
 	public OmronMonitor(Context context) {
 		this.mContext = context;
 		mHealthservice = new Intent(this.mContext, HealthService.class);
+		mDeviceInfo = new DeviceInfo();
+		mDeviceInfo.setDeviceName(DEVICE_NAME);
+		mDeviceInfo.setDevicePin(DEVICE_PIN);
 		Log.i(Tag, "Connect Device is Omron!");
 	}
 	
@@ -45,14 +51,14 @@ public class OmronMonitor implements ApiMonitor {
 		
 		// 如果没有配对，则先开始配对再连接，否则配对完成后不能再连接
 		for (BluetoothDevice device : BluetoothAdapter.getDefaultAdapter().getBondedDevices()) {
-			if (device.getName().equals(OmronBluetoothConnection.DEVICE_NAME)) {
+			if (device.getName().equals(getDeviceInfo().getDeviceName())) {
 				startService();
 				break;
 			}
 		}
 		
 		if (mConnection == null) {
-			mConnection = new OmronBluetoothConnection(mContext, mBluetoothListener, this);
+			mConnection = new OmronBluetoothConnection(mContext, getDeviceInfo(), mBluetoothListener, this);
 			if (mHealthAgentApiStub == null) {
 				mHealthAgentApiStub = new HealthAgentApiStub(mConnection);
 			}
@@ -125,12 +131,14 @@ public class OmronMonitor implements ApiMonitor {
 	
 	@Override
 	public DeviceInfo getDeviceInfo() {
-		if (mDeviceInfo == null) {
-			mDeviceInfo = new DeviceInfo();
-			mDeviceInfo.setDevID(OmronBluetoothConnection.DEVICE_NAME);
-			mDeviceInfo.setDeviceName("欧姆龙");
-		}
 		return mDeviceInfo;
 	}
 	
+	@Override
+	public void configDevice(String deviceName, String devicePin) {
+		mDeviceInfo.setDeviceName(deviceName);
+		mDeviceInfo.setDevicePin(devicePin);
+		DEVICE_NAME = deviceName;
+		DEVICE_PIN = devicePin;
+	}
 }

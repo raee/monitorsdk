@@ -26,8 +26,8 @@ import android.os.Messenger;
 import android.os.RemoteException;
 import android.util.Log;
 
-import com.yixin.monitors.sdk.bluetooth.OmronBluetoothConnection;
 import com.yixin.monitors.sdk.bluetooth.SendBoradcastManager;
+import com.yixin.monitors.sdk.omron.OmronMonitor;
 
 @SuppressLint("HandlerLeak")
 public class HealthService extends Service {
@@ -37,13 +37,6 @@ public class HealthService extends Service {
 	JniBridge									antidote;
 	
 	private HealthServiceAPI.Stub				apiEndpoint							= new HealthServiceAPI.Stub() {
-																						//																						// FIXME add to AIDL
-																						//																						// @Override
-																						//																						public void AbortAssociation(String dev) throws RemoteException {
-																						//																							Log.i(TAG, "Aborting association (asked by client)");
-																						//																							int context = get_context(dev);
-																						//																							antidote.abortassoc(context);
-																						//																						}
 																						
 																						@Override
 																						public void ConfigurePassive(HealthAgentAPI agt, int[] specs) throws RemoteException {
@@ -59,13 +52,6 @@ public class HealthService extends Service {
 																							return antidote.getconfig(context);
 																						}
 																						
-																						// @Override
-																						//																						public void ReleaseAssociation(String dev) throws RemoteException {
-																						//																							Log.i(TAG, "Releasing association (asked by client)");
-																						//																							int context = get_context(dev);
-																						//																							antidote.releaseassoc(context);
-																						//																						}
-																						
 																						@Override
 																						public void RequestDeviceAttributes(String dev) throws RemoteException {
 																							Log.i(TAG, "Asking deviceAttributes");
@@ -79,6 +65,7 @@ public class HealthService extends Service {
 																							agents.remove(agt);
 																							Log.i(TAG, "Unconfigured agent " + agt);
 																						}
+																						
 																					};
 	
 	int											context_id							= 0;
@@ -256,7 +243,7 @@ public class HealthService extends Service {
 			
 			BluetoothAdapter bluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
 			for (BluetoothDevice device : bluetoothAdapter.getBondedDevices()) {
-				if (OmronBluetoothConnection.DEVICE_NAME.equals(device.getName())) {
+				if (OmronMonitor.DEVICE_NAME.equals(device.getName())) {
 					// 发送蓝牙广播，告知已经完成连接！
 					SendBoradcastManager.sendDeviceConnected(getApplicationContext(), device);
 					mIsSendConnectedBroadcast = true;

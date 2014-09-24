@@ -21,4 +21,6 @@ public interface ApiMonitor extends Connectable {
 	void setBluetoothListener(BluetoothListener listener);
 	
 	DeviceInfo getDeviceInfo();
+	
+	void configDevice(String deviceName, String devicePin);
 }
