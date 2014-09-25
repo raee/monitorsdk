@@ -98,8 +98,11 @@ abstract class BluetoothConnection implements BluetoothListener, Connectable {
 	@Override
 	public void onStopDiscovery() {
 		Log.i(TAG, "蓝牙扫描完毕！");
-		if (mCurrentDevice == null || !mCurrentDevice.getName().equals(getDeviceName())) {
+		if (mCurrentDevice == null) {
 			onError(0, getDeviceName() + "设备没有发现，请打开监测设备再试！");
+		}
+		else if (!mCurrentDevice.getName().equals(getDeviceName())) {
+			onError(0, "没有找到与" + getDeviceName() + "配对的设备！");
 		}
 		mBluetoothListener.onStopDiscovery();
 	}

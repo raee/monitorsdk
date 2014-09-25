@@ -1,5 +1,9 @@
 package com.yixin.monitors.sdk.model;
 
+import java.text.SimpleDateFormat;
+import java.util.Date;
+
+import android.annotation.SuppressLint;
 import android.os.Parcel;
 import android.os.Parcelable;
 
@@ -84,7 +88,12 @@ public class SignDataModel implements Parcelable {
 		return dataType;
 	}
 	
+	@SuppressLint("SimpleDateFormat")
 	public String getDate() {
+		if (date == null) {
+			SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+			return df.format(new Date());
+		}
 		return date;
 	}
 	

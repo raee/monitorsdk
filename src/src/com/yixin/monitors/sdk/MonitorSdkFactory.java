@@ -4,6 +4,7 @@ import android.content.Context;
 import android.util.SparseArray;
 
 import com.yixin.monitors.sdk.api.ApiMonitor;
+import com.yixin.monitors.sdk.manette.ManetteMonitor;
 import com.yixin.monitors.sdk.mindray.MindrayMonitor;
 import com.yixin.monitors.sdk.omron.OmronMonitor;
 import com.yixin.monitors.sdk.test.TestMonitor;
@@ -28,7 +29,14 @@ public final class MonitorSdkFactory {
 	 */
 	public static final int							OMRON		= 1;
 	
+	/**
+	 * 测试设备
+	 */
 	public static final int							TEST		= -1;
+	/**
+	 * 玛奈特血糖
+	 */
+	public static final int							MANETTE		= 2;
 	
 	/**
 	 * 获取接口
@@ -39,29 +47,36 @@ public final class MonitorSdkFactory {
 	 * @return
 	 */
 	public static ApiMonitor getApiMonitor(Context context, int sdk) {
-		ApiMonitor result = Monitors.get(sdk);
+		ApiMonitor result;
 		switch (sdk) {
 			case OMRON:
-				if (result == null) {
-					result = new OmronMonitor(context);
-					Monitors.put(sdk, result);
-				}
+				result = getMonitor(sdk, new OmronMonitor(context));
 				break;
 			case TEST:
-				if (result == null) {
-					result = new TestMonitor();
-					Monitors.put(sdk, result);
-				}
+				result = getMonitor(sdk, new TestMonitor());
+				break;
+			case MANETTE:
+				result = getMonitor(sdk, new ManetteMonitor(context));
 				break;
 			case MINDRAY:
+				result = getMonitor(sdk, new MindrayMonitor(context));
+				break;
 			default:
-				if (result == null) {
-					result = new MindrayMonitor(context);
-					Monitors.put(sdk, result);
-				}
+				result = getMonitor(sdk, new MindrayMonitor(context));
 				break;
 		}
 		return result;
+	}
+	
+	private static ApiMonitor getMonitor(int sdk, ApiMonitor taget) {
+		ApiMonitor result = Monitors.get(sdk);
+		if (result == null) {
+			Monitors.put(sdk, taget);
+			return taget;
+		}
+		else {
+			return result;
+		}
 	}
 	
 }

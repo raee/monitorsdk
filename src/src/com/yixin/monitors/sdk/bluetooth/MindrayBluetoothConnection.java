@@ -3,16 +3,20 @@ package com.yixin.monitors.sdk.bluetooth;
 import android.bluetooth.BluetoothDevice;
 import android.content.Context;
 import android.os.AsyncTask.Status;
-import android.util.Log;
 
 import com.yixin.monitors.sdk.api.BluetoothListener;
 import com.yixin.monitors.sdk.api.IBluetoothSendable;
 import com.yixin.monitors.sdk.model.DeviceInfo;
 import com.yixin.monitors.sdk.model.PackageModel;
 
+/**
+ * 迈瑞蓝牙连接线程
+ * 
+ * @author ChenRui
+ * 
+ */
 public class MindrayBluetoothConnection extends BluetoothConnection {
-	private MindraySocketConnection	mSocketConnection;
-	private String					TAG	= "MindrayBluetoothConnection";
+	private BluetoothSocketConnection	mSocketConnection;
 	
 	/**
 	 * 实例化后请记得设置数据解析接口，及socket连接
@@ -22,15 +26,11 @@ public class MindrayBluetoothConnection extends BluetoothConnection {
 	 */
 	public MindrayBluetoothConnection(Context context, DeviceInfo info, BluetoothListener listener) {
 		super(context, info, listener);
-		mSocketConnection = new MindraySocketConnection(this);
+		mSocketConnection = new BluetoothSocketConnection(this);
 	}
 	
 	public IBluetoothSendable getBluetoothSendableInterface() {
 		return mSocketConnection;
-	}
-	
-	public void setSocketConnection(MindraySocketConnection conn) {
-		this.mSocketConnection = conn;
 	}
 	
 	@Override
@@ -81,11 +81,11 @@ public class MindrayBluetoothConnection extends BluetoothConnection {
 	
 	private void connect(BluetoothDevice device) {
 		if (mSocketConnection == null) {
-			mSocketConnection = new MindraySocketConnection(this);
+			mSocketConnection = new BluetoothSocketConnection(this);
 		}
 		if (mSocketConnection.getStatus() == Status.FINISHED) {
 			mSocketConnection.disconnect();
-			mSocketConnection = new MindraySocketConnection(this);
+			mSocketConnection = new BluetoothSocketConnection(this);
 		}
 		
 		mSocketConnection.connect(device);
@@ -100,12 +100,10 @@ public class MindrayBluetoothConnection extends BluetoothConnection {
 	@Override
 	public void disconnect() {
 		super.disconnect();
-		Log.i(TAG, "Connect Cancel: Mindray !");
 		if (mSocketConnection != null) {
 			mSocketConnection.disconnect();
 			mSocketConnection = null;
 		}
-		
 		getBluetoothManager().closeBluetooth(); //关闭 蓝牙
 	}
 	

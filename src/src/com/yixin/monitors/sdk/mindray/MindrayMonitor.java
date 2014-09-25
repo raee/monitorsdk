@@ -10,20 +10,18 @@ import com.yixin.monitors.sdk.mindray.parser.CMSControl;
 import com.yixin.monitors.sdk.model.DeviceInfo;
 
 public class MindrayMonitor implements ApiMonitor {
-	public static String				DEVICE_NAME	= "mindray-ubicare";
-	public static String				DEVICE_PIN	= "4321";
-	private static final String			Tag			= "MindrayMonitor";
-	private Context						mContext;
-	private MindrayBluetoothConnection	mConnection;
-	private BluetoothListener			mBluetoothListener;
+	public static String					DEVICE_NAME	= "mindray-ubicare";
+	public static String					DEVICE_PIN	= "4321";
+	private static final String				Tag			= "MindrayMonitor";
+	protected Context						mContext;
+	protected MindrayBluetoothConnection	mConnection;
+	protected BluetoothListener				mBluetoothListener;
 	
 	public MindrayMonitor(Context context) {
 		this.mContext = context;
 		mDeviceInfo = new DeviceInfo();
 		mDeviceInfo.setDeviceName(DEVICE_NAME);
 		mDeviceInfo.setDevicePin(DEVICE_PIN);
-		Log.i(Tag, "Connect Device is Mindray!");
-		
 	}
 	
 	@Override
