@@ -39,7 +39,7 @@ public final class MonitorSdkFactory {
 	public static final int							MANETTE		= 2;
 	
 	/**
-	 * 获取接口
+	 * 获取接口，获取接口后调用configDevice(name,pin)来设置默认的设备名称和配对码。否则将会以默认的名称和配对码进行配对。
 	 * 
 	 * @param context
 	 * @param sdk
