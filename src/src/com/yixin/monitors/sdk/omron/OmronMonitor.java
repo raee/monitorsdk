@@ -44,6 +44,10 @@ public class OmronMonitor implements ApiMonitor {
 	
 	@Override
 	public void connect() {
+		if(mBluetoothListener == null){
+			Log.e(Tag, "没有设置蓝牙监听，不发生连接！");
+			return;
+		}
 		if (isConnected()) {
 			Log.i(Tag, getDeviceInfo().getDeviceName() + "已经连接！不需要连接！");
 			return;
