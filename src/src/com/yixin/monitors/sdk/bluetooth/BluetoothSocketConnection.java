@@ -181,13 +181,12 @@ public class BluetoothSocketConnection extends AsyncTask<BluetoothDevice, byte[]
 				this.mSocket.getOutputStream().write(data, 0, data.length);
 			}
 			catch (IOException e) {
-				Log.e(tag, "发送数据失败！");
-				e.printStackTrace();
+				onBluetoothError(-1, "蓝牙数据发送失败,请重新连接。");
+				disconnect();
 			}
 		}
 		else {
-			
-			Log.e(tag, "发送数据失败,蓝牙输出流为空。");
+			onBluetoothError(-1, "发送数据失败,蓝牙输出流为空。");
 		}
 	}
 	
