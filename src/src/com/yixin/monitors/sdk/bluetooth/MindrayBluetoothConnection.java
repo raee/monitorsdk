@@ -39,7 +39,7 @@ public class MindrayBluetoothConnection extends BluetoothConnection {
 		if (device == null) {
 			return false;
 		}
-		
+
 		if (getDeviceName().equals(device.getName())) {
 			if (isBonded) {
 				connect(device);
@@ -68,6 +68,11 @@ public class MindrayBluetoothConnection extends BluetoothConnection {
 		if (model != null) {
 			mIsStarted = false;
 		}
+	}
+
+	@Override
+	public void onBluetoothSendData(byte[] data) {
+		super.onBluetoothSendData(data);
 	}
 
 	@Override
@@ -111,5 +116,6 @@ public class MindrayBluetoothConnection extends BluetoothConnection {
 		}
 		getBluetoothManager().closeBluetooth(); // 关闭 蓝牙
 	}
+
 
 }

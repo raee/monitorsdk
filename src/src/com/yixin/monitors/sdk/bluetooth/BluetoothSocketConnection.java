@@ -19,63 +19,43 @@ import com.yixin.monitors.sdk.api.IBluetoothSendable;
  * @author ChenRui
  * 
  */
-public class BluetoothSocketConnection extends AsyncTask<BluetoothDevice, byte[], Integer> implements IBluetoothSendable {
-	private String				uuid	= "00001101-0000-1000-8000-00805F9B34FB";
-	private String				tag		= "BluetoothSocketConnection";
-	private InputStream			mSocketInputStream;
-	//	private OutputStream		mSocketOutputStream;
-	private BluetoothSocket		mSocket;
-	private BluetoothDevice		mDevice;
-	
-	private BluetoothListener	mListener;
-	//	private Handler				mHandler	= new Handler(new Handler.Callback() {
-	//												
-	//												@Override
-	//												public boolean handleMessage(Message msg) {
-	//													switch (msg.what) {
-	//														case -1:
-	//															mListener.onError(msg.arg1, msg.obj.toString());
-	//															break;
-	//														case 1:
-	//															mListener.onConnected(mDevice); // 通知连接成功！
-	//															break;
-	//														case 2:
-	//															mListener.onBluetoothCancle(); // 结束蓝牙监听
-	//															break;
-	//														case 3:
-	//															mListener.onStartReceive();
-	//															break;
-	//														default:
-	//															break;
-	//													}
-	//													return false;
-	//												}
-	//											});
-	private String				msg;
-	private int					errorCode;
-	
+public class BluetoothSocketConnection extends
+		AsyncTask<BluetoothDevice, byte[], Integer> implements
+		IBluetoothSendable {
+	private String uuid = "00001101-0000-1000-8000-00805F9B34FB";
+	private String tag = "BluetoothSocketConnection";
+	private InputStream mSocketInputStream;
+	// private OutputStream mSocketOutputStream;
+	private BluetoothSocket mSocket;
+	private BluetoothDevice mDevice;
+
+	private BluetoothListener mListener;
+	private String msg;
+	private int errorCode;
+	private boolean mIsConnected = false;
+
 	public BluetoothSocketConnection(BluetoothListener listener) {
 		super();
 		this.mListener = listener;
 	}
-	
+
 	public void setBluetoothListener(BluetoothListener l) {
 		this.mListener = l;
 	}
-	
+
 	public void connect(BluetoothDevice device) {
 		if (getStatus() == Status.PENDING) {
 			this.execute(device);
 			Log.i(tag, "开始连接设备！");
 		}
 	}
-	
+
 	public void disconnect() {
 		if (getStatus() != Status.PENDING) {
 			cancleConnect();
 		}
 	}
-	
+
 	private void cancleConnect() {
 		try {
 			if (this.mSocketInputStream != null) {
@@ -84,16 +64,14 @@ public class BluetoothSocketConnection extends AsyncTask<BluetoothDevice, byte[]
 				this.mSocketInputStream = null;
 				this.mSocket = null;
 			}
-		}
-		catch (Exception e) {
+		} catch (Exception e) {
 			e.printStackTrace();
 			Log.e(tag, "取消蓝牙线程失败：" + e.getMessage());
-		}
-		finally {
+		} finally {
 			onBluetoothCancle();
 		}
 	}
-	
+
 	/**
 	 * 是否已经连接
 	 * 
@@ -102,7 +80,7 @@ public class BluetoothSocketConnection extends AsyncTask<BluetoothDevice, byte[]
 	public boolean isDisConnected() {
 		return mSocket == null || mSocketInputStream == null;
 	}
-	
+
 	@Override
 	protected Integer doInBackground(BluetoothDevice... params) {
 		int result = 0;
@@ -111,6 +89,7 @@ public class BluetoothSocketConnection extends AsyncTask<BluetoothDevice, byte[]
 			UUID uid = UUID.fromString(uuid);
 			this.mSocket = this.mDevice.createRfcommSocketToServiceRecord(uid);
 			Log.i(tag, "正准备Bluetooth Socket连接...");
+			mListener.onStartConnection(mDevice);
 			this.mSocket.connect();
 			onConnected(mDevice); // 连接成功
 			this.mSocketInputStream = mSocket.getInputStream();
@@ -127,10 +106,9 @@ public class BluetoothSocketConnection extends AsyncTask<BluetoothDevice, byte[]
 				byte[] recBuffer = Arrays.copyOf(buffer, len);
 				this.publishProgress(recBuffer);
 			}
-			
+
 			onBluetoothCancle();
-		}
-		catch (IOException e) {
+		} catch (IOException e) {
 			e.printStackTrace();
 			msg = e.getMessage();
 			errorCode = BluetoothListener.ERROR_CODE_UNKNOWN;
@@ -138,30 +116,26 @@ public class BluetoothSocketConnection extends AsyncTask<BluetoothDevice, byte[]
 			if (msg.contains("timeout")) {
 				msg = "请确认迈瑞设备是否打开或尝试重新进行蓝牙配对！";
 				errorCode = BluetoothListener.ERROR_TIME_OUT;
-			}
-			else if (msg.contains("closed")) {
+			} else if (msg.contains("closed")) {
 				msg = "设备断开连接！";
 				errorCode = BluetoothListener.ERROR_CODE_STREAM_CLOSE;
-			}
-			else {
+			} else {
 				msg = "设备发生不可预知的异常！" + msg;
 			}
 			result = -1;
-			
-		}
-		catch (Exception e) {
+
+		} catch (Exception e) {
 			e.printStackTrace();
 			msg = "蓝牙连接发生未知异常";
 			errorCode = BluetoothListener.ERROR_CODE_UNKNOWN;
 			result = -1;
-		}
-		finally {
+		} finally {
 			this.disconnect();
 		}
-		
+
 		return result;
 	}
-	
+
 	@Override
 	protected void onPostExecute(Integer result) {
 		super.onPostExecute(result);
@@ -169,7 +143,7 @@ public class BluetoothSocketConnection extends AsyncTask<BluetoothDevice, byte[]
 			onBluetoothError(errorCode, msg);
 		}
 	}
-	
+
 	/**
 	 * 向蓝牙发送数据
 	 */
@@ -179,39 +153,43 @@ public class BluetoothSocketConnection extends AsyncTask<BluetoothDevice, byte[]
 			try {
 				Log.i(tag, "发送数据：" + data.length);
 				this.mSocket.getOutputStream().write(data, 0, data.length);
-			}
-			catch (IOException e) {
+
+				mListener.onBluetoothSendData(data);
+			} catch (IOException e) {
 				onBluetoothError(-1, "蓝牙数据发送失败,请重新连接。");
 				disconnect();
 			}
-		}
-		else {
-			onBluetoothError(-1, "发送数据失败,蓝牙输出流为空。");
+		} else {
+			onBluetoothError(-1, "发送数据失败,蓝牙传输发生错误！");
+			disconnect();
 		}
 	}
-	
+
 	@Override
 	protected void onProgressUpdate(byte[]... values) {
 		byte[] data = values[0];
 		onBluetoothReceived(data);
 	}
-	
+
 	protected void onBluetoothReceived(byte[] data) {
 		mListener.onReceiving(data);
 	}
-	
+
 	protected void onBluetoothError(int errorCode, String msg) {
 		mListener.onError(errorCode, msg);
-		//		Message.obtain(mHandler, -1, errorCode, 0, msg).sendToTarget();
+		mIsConnected = false;
 	}
-	
+
 	protected void onBluetoothCancle() {
 		mListener.onBluetoothCancle();
-		//		Message.obtain(mHandler, 2).sendToTarget(); // 通知蓝牙取消监听
+		mIsConnected = false;
 	}
-	
+
 	protected void onConnected(BluetoothDevice device) {
+		if (mIsConnected) {
+			return;
+		}
 		mListener.onConnected(device);
-		//		Message.obtain(mHandler, 1).sendToTarget(); // 通知连接成功
+		mIsConnected = true;
 	}
 }

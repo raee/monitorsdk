@@ -242,4 +242,13 @@ abstract class BluetoothConnection implements BluetoothListener, Connectable {
 		mIsConnected = false;
 	}
 
+	@Override
+	public void onBluetoothSendData(byte[] data) {
+		mBluetoothListener.onBluetoothSendData(data);
+	}
+
+	@Override
+	public void onStartConnection(BluetoothDevice mDevice) {
+		mBluetoothListener.onStartConnection(mDevice);
+	}
 }
