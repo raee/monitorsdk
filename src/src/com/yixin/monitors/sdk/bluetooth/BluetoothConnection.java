@@ -22,19 +22,20 @@ import com.yixin.monitors.sdk.model.PackageModel;
  */
 abstract class BluetoothConnection implements BluetoothListener, Connectable {
 
-	private static final String TAG = "BluetoothConnection";
-	private BluetoothManager mBluetoothManager;
-	private BluetoothListener mBluetoothListener;
-	protected IDataParser mDataParser;
-	protected boolean mIsConnected = false; // 是否连接上设备！
-	private BluetoothDevice mCurrentDevice;
-	private DeviceInfo mDeviceInfo;
+	private static final String	TAG				= "BluetoothConnection";
+	private BluetoothManager	mBluetoothManager;
+	private BluetoothListener	mBluetoothListener;
+	protected IDataParser		mDataParser;
+	protected boolean			mIsConnected	= false;					// 是否连接上设备！
+	private BluetoothDevice		mCurrentDevice;
+	private DeviceInfo			mDeviceInfo;
+	protected Context			mContext;
 
-	public BluetoothConnection(Context context, DeviceInfo info,
-			BluetoothListener listener) {
+	public BluetoothConnection(Context context, DeviceInfo info, BluetoothListener listener) {
 		mBluetoothManager = new BluetoothManager(context);
 		mBluetoothManager.setBluetoothListener(this);
 		mDeviceInfo = info;
+		this.mContext = context;
 		setBluetoothListener(listener);
 	}
 
@@ -73,9 +74,14 @@ abstract class BluetoothConnection implements BluetoothListener, Connectable {
 	 * 开始扫描蓝牙设备
 	 */
 	protected void startDiscovery() {
-		Set<BluetoothDevice> devices = mBluetoothManager.getBluetoothAdapter()
-				.getBondedDevices();// 迭代，得到所有本机已保存的配对的蓝牙适配器对象
+		Set<BluetoothDevice> devices = mBluetoothManager.getBluetoothAdapter().getBondedDevices();// 迭代，得到所有本机已保存的配对的蓝牙适配器对象
 		for (BluetoothDevice bluetoothDevice : devices) {
+			// if (getDeviceName().equals(bluetoothDevice.getName()) &&
+			// bluetoothDevice.getBondState() == BluetoothDevice.BOND_BONDED) {
+			// Log.i(TAG, bluetoothDevice.getName() + "蓝牙已经配对！");
+			// BluetoothManager.removeBond(bluetoothDevice); // 移除配对
+			// }
+
 			if (onFindBluetooth(bluetoothDevice, true)) {
 				Log.i(TAG, "发现可用蓝牙，不开始扫描！");
 				mCurrentDevice = bluetoothDevice;
@@ -84,8 +90,7 @@ abstract class BluetoothConnection implements BluetoothListener, Connectable {
 			}
 		}
 
-		BluetoothAdapter bluetoothAdapter = mBluetoothManager
-				.getBluetoothAdapter();
+		BluetoothAdapter bluetoothAdapter = mBluetoothManager.getBluetoothAdapter();
 		Log.i(TAG, "是否正在扫描：" + bluetoothAdapter.isDiscovering());
 		if (bluetoothAdapter != null && !bluetoothAdapter.isDiscovering()) {
 			bluetoothAdapter.startDiscovery();// 查找设备
@@ -104,7 +109,8 @@ abstract class BluetoothConnection implements BluetoothListener, Connectable {
 		Log.i(TAG, "蓝牙扫描完毕！");
 		if (mCurrentDevice == null) {
 			onError(0, getDeviceName() + "设备没有发现，请打开监测设备再试！");
-		} else if (!mCurrentDevice.getName().equals(getDeviceName())) {
+		}
+		else if (!getDeviceName().equals(mCurrentDevice.getName())) {
 			onError(0, "没有找到与" + getDeviceName() + "配对的设备！");
 		}
 		mBluetoothListener.onStopDiscovery();
@@ -138,19 +144,26 @@ abstract class BluetoothConnection implements BluetoothListener, Connectable {
 
 	@Override
 	public boolean onFindBluetooth(BluetoothDevice device, boolean isBonded) {
+		if (device == null) {
+			return false;
+		}
 		Log.i(TAG, "发现蓝牙设备" + device.getName());
-		if (device.getName().equals(getDeviceName())) {
+		if (getDeviceName().equals(device.getName())) {
 			mCurrentDevice = device;
 			if (!getBluetoothManager().getBluetoothAdapter().isDiscovering()) {
 				onStopDiscovery();
-			} else {
+			}
+			else {
 				getBluetoothManager().stopDiscovery();
 			}
 			if (isBonded) {
 				return true;
 			}
 			Log.i(TAG, "发现蓝牙设备,并开始配对：" + device.getName());
-			BluetoothManager.autoCrateBondAndSetPin(device, getDevicePin()); // 自动配对
+			boolean pinResult = BluetoothManager.autoCrateBondAndSetPin(device, getDevicePin()); // 自动配对
+			if (!pinResult) {
+				onBluetoothBondNone(device); // 配对失败
+			}
 			return true;
 		}
 		return mBluetoothListener.onFindBluetooth(device, isBonded);
@@ -176,14 +189,14 @@ abstract class BluetoothConnection implements BluetoothListener, Connectable {
 	@Override
 	public void onBluetoothBonded(BluetoothDevice device) {
 		Log.i(TAG, device.getName() + "配对成功！");
-		BluetoothManager.cancelPairingUserInput(device);
+		BluetoothManager.cancelPairingUserInput(device, this.mContext);
 		mBluetoothListener.onBluetoothBonded(device);
 	}
 
 	@Override
 	public void onBluetoothBondNone(BluetoothDevice device) {
 		if (device.getName().equals(getDeviceName())) {
-			if (device.getBondState() != BluetoothDevice.BOND_BONDED) {
+			if (!isConnected()) { // 取消配对时没有连接上，则视为取消配对。
 				mBluetoothListener.onBluetoothBondNone(device);
 				Log.i(TAG, "取消配对！" + device.getName());
 			}

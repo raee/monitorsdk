@@ -14,8 +14,8 @@ import com.yixin.monitors.sdk.mindray.MindrayMonitor;
  * 
  */
 public class ManetteMonitor extends MindrayMonitor {
-	public static String	DEVICE_NAME	= "TZ100";
-	public static String	DEVICE_PIN	= "1234";
+	public static String DEVICE_NAME = "TZ100";
+	public static String DEVICE_PIN = "1234";
 
 	public ManetteMonitor(Context context) {
 		super(context);
@@ -36,7 +36,7 @@ public class ManetteMonitor extends MindrayMonitor {
 			mConnection = new MindrayBluetoothConnection(mContext,
 					getDeviceInfo(), mBluetoothListener);
 			IDataParser mDataParser = new ManetteDataParser(
-					mConnection.getBluetoothSendableInterface(),
+					mConnection.getBluetoothSocketConnection(),
 					mBluetoothListener);
 			mConnection.setDataParser(mDataParser);
 		}

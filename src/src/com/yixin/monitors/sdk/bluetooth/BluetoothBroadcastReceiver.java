@@ -16,8 +16,8 @@ import com.yixin.monitors.sdk.api.BluetoothListener;
  */
 class BluetoothBroadcastReceiver extends BroadcastReceiver {
 
-	BluetoothListener mBluetoothListener;
-	private boolean isRegister = false;
+	BluetoothListener	mBluetoothListener;
+	private boolean		isRegister	= false;
 
 	public boolean isRegister() {
 		return isRegister;
@@ -27,8 +27,7 @@ class BluetoothBroadcastReceiver extends BroadcastReceiver {
 		this.isRegister = isRegister;
 	}
 
-	private BluetoothAdapter mBluetoothAdapter = BluetoothAdapter
-			.getDefaultAdapter();
+	private BluetoothAdapter	mBluetoothAdapter	= BluetoothAdapter.getDefaultAdapter();
 
 	public BluetoothBroadcastReceiver(BluetoothListener listener) {
 		setBluetoothListener(listener);
@@ -54,10 +53,8 @@ class BluetoothBroadcastReceiver extends BroadcastReceiver {
 
 		// 发现蓝牙设备
 		if (BluetoothDevice.ACTION_FOUND.equals(action)) {
-			BluetoothDevice device = intent
-					.getParcelableExtra(BluetoothDevice.EXTRA_DEVICE);
-			if (mBluetoothListener.onFindBluetooth(device,
-					device.getBondState() == BluetoothDevice.BOND_BONDED)) {
+			BluetoothDevice device = intent.getParcelableExtra(BluetoothDevice.EXTRA_DEVICE);
+			if (mBluetoothListener.onFindBluetooth(device, device.getBondState() == BluetoothDevice.BOND_BONDED)) {
 				return;
 			}
 		}
@@ -65,8 +62,7 @@ class BluetoothBroadcastReceiver extends BroadcastReceiver {
 		// 蓝牙状态改变
 		if (BluetoothAdapter.ACTION_STATE_CHANGED.equals(action)) {
 			int state = mBluetoothAdapter.getState();
-			BluetoothDevice device = intent
-					.getParcelableExtra(BluetoothDevice.EXTRA_DEVICE);
+			BluetoothDevice device = intent.getParcelableExtra(BluetoothDevice.EXTRA_DEVICE);
 			mBluetoothListener.onBluetoothStateChange(state, device);
 			if (BluetoothAdapter.STATE_OFF == state) {
 				mBluetoothListener.onCloseBluetooth();
@@ -78,28 +74,26 @@ class BluetoothBroadcastReceiver extends BroadcastReceiver {
 
 		// 蓝牙配对状态
 		if (BluetoothDevice.ACTION_BOND_STATE_CHANGED.equals(action)) {
-			BluetoothDevice device = intent
-					.getParcelableExtra(BluetoothDevice.EXTRA_DEVICE);
+			BluetoothDevice device = intent.getParcelableExtra(BluetoothDevice.EXTRA_DEVICE);
 			int state = device.getBondState();
 			switch (state) {
-			case BluetoothDevice.BOND_BONDED:// 蓝牙已经正在配对完成
-				mBluetoothListener.onBluetoothBonded(device);
-				break;
-			case BluetoothDevice.BOND_BONDING:// 蓝牙正在配对
-				mBluetoothListener.onBluetoothBonding(device);
-				break;
-			case BluetoothDevice.BOND_NONE: // 蓝牙取消配对
-				mBluetoothListener.onBluetoothBondNone(device);
-				break;
-			default:
-				break;
+				case BluetoothDevice.BOND_BONDED:// 蓝牙已经正在配对完成
+					mBluetoothListener.onBluetoothBonded(device);
+					break;
+				case BluetoothDevice.BOND_BONDING:// 蓝牙正在配对
+					mBluetoothListener.onBluetoothBonding(device);
+					break;
+				case BluetoothDevice.BOND_NONE: // 蓝牙取消配对
+					mBluetoothListener.onBluetoothBondNone(device);
+					break;
+				default:
+					break;
 			}
 		}
 
 		// 设置配对码状态
 		if (BluetoothManager.ACTION_PAIRING_REQUEST.equals(action)) {
-			BluetoothDevice device = intent
-					.getParcelableExtra(BluetoothDevice.EXTRA_DEVICE);
+			BluetoothDevice device = intent.getParcelableExtra(BluetoothDevice.EXTRA_DEVICE);
 			mBluetoothListener.onBluetoothSetPin(device); // 蓝牙正在弹出配对输入框
 		}
 
@@ -110,22 +104,19 @@ class BluetoothBroadcastReceiver extends BroadcastReceiver {
 
 		// 正在数据接收
 		if (BluetoothManager.ACTION_RECEIVEING.equals(action)) {
-			byte[] data = intent
-					.getByteArrayExtra(BluetoothManager.EXTRA_BLUETOOTH_DATA);
+			byte[] data = intent.getByteArrayExtra(BluetoothManager.EXTRA_BLUETOOTH_DATA);
 			mBluetoothListener.onReceiving(data);
 		}
 
 		// 接收完成
 		if (BluetoothManager.ACTION_RECEIVED.equals(action)) {
-			byte[] data = intent
-					.getByteArrayExtra(BluetoothManager.EXTRA_BLUETOOTH_DATA);
+			byte[] data = intent.getByteArrayExtra(BluetoothManager.EXTRA_BLUETOOTH_DATA);
 			mBluetoothListener.onReceived(data);
 		}
 
 		// 蓝牙建立连接完成
 		if (BluetoothManager.ACTION_CONNETED.equals(action)) {
-			BluetoothDevice device = intent
-					.getParcelableExtra(BluetoothDevice.EXTRA_DEVICE);
+			BluetoothDevice device = intent.getParcelableExtra(BluetoothDevice.EXTRA_DEVICE);
 			mBluetoothListener.onConnected(device);
 		}
 	}

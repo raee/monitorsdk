@@ -3,9 +3,7 @@ package com.yixin.monitors.sdk.bluetooth;
 import android.bluetooth.BluetoothDevice;
 import android.content.Context;
 import android.os.AsyncTask.Status;
-
 import com.yixin.monitors.sdk.api.BluetoothListener;
-import com.yixin.monitors.sdk.api.IBluetoothSendable;
 import com.yixin.monitors.sdk.model.DeviceInfo;
 import com.yixin.monitors.sdk.model.PackageModel;
 
@@ -16,7 +14,10 @@ import com.yixin.monitors.sdk.model.PackageModel;
  * 
  */
 public class MindrayBluetoothConnection extends BluetoothConnection {
-	private BluetoothSocketConnection mSocketConnection;
+	private BluetoothSocketConnection	mSocketConnection;
+	private boolean						mIsStarted	= false;
+//	private String						tag			= "MindrayBluetoothConnection";
+	private BluetoothListener			mListener;
 
 	/**
 	 * 实例化后请记得设置数据解析接口，及socket连接
@@ -24,22 +25,18 @@ public class MindrayBluetoothConnection extends BluetoothConnection {
 	 * @param context
 	 * @param listener
 	 */
-	public MindrayBluetoothConnection(Context context, DeviceInfo info,
-			BluetoothListener listener) {
+	public MindrayBluetoothConnection(Context context, DeviceInfo info, BluetoothListener listener) {
 		super(context, info, listener);
+		this.mListener = listener;
 		mSocketConnection = new BluetoothSocketConnection(this);
 	}
 
-	public IBluetoothSendable getBluetoothSendableInterface() {
+	public BluetoothSocketConnection getBluetoothSocketConnection() {
 		return mSocketConnection;
 	}
 
 	@Override
 	public boolean onFindBluetooth(BluetoothDevice device, boolean isBonded) {
-		if (device == null) {
-			return false;
-		}
-
 		if (getDeviceName().equals(device.getName())) {
 			if (isBonded) {
 				connect(device);
@@ -48,8 +45,6 @@ public class MindrayBluetoothConnection extends BluetoothConnection {
 		}
 		return super.onFindBluetooth(device, isBonded);
 	}
-
-	private boolean mIsStarted = false;
 
 	@Override
 	public void onReceiving(byte[] data) {
@@ -80,7 +75,7 @@ public class MindrayBluetoothConnection extends BluetoothConnection {
 		super.onError(errorCode, msg);
 		mIsStarted = false;
 		mIsConnected = false;
-
+		getBluetoothManager().closeBluetooth(); // 发生错误则关闭蓝牙。
 	}
 
 	@Override
@@ -89,16 +84,23 @@ public class MindrayBluetoothConnection extends BluetoothConnection {
 		connect(device);
 	}
 
+	@Override
+	public void onConnected(BluetoothDevice device) {
+		super.onConnected(device);
+		BluetoothManager.cancelPairingUserInput(device, mContext);
+	}
+
 	private void connect(BluetoothDevice device) {
-		if (mSocketConnection == null) {
-			mSocketConnection = new BluetoothSocketConnection(this);
+		if (mSocketConnection.getStatus() == Status.RUNNING) {
+			return;
 		}
-		if (mSocketConnection.getStatus() == Status.FINISHED) {
-			mSocketConnection.disconnect();
-			mSocketConnection = new BluetoothSocketConnection(this);
+		else if (mSocketConnection.getStatus() == Status.FINISHED) {
+			mSocketConnection.cancel(true);
+			mSocketConnection = null;
+			mSocketConnection = new BluetoothSocketConnection(mListener);
 		}
 
-		mSocketConnection.connect(device);
+		mSocketConnection.execute(device);
 	}
 
 	@Override
@@ -108,14 +110,19 @@ public class MindrayBluetoothConnection extends BluetoothConnection {
 	}
 
 	@Override
-	public void disconnect() {
-		super.disconnect();
-		if (mSocketConnection != null) {
-			mSocketConnection.disconnect();
-			mSocketConnection = null;
-		}
-		getBluetoothManager().closeBluetooth(); // 关闭 蓝牙
+	public boolean isConnected() {
+		return !mSocketConnection.isDisConnected();
 	}
 
+	@Override
+	public void disconnect() {
+		super.disconnect();
+		// if (mSocketConnection != null) {
+		mSocketConnection.disconnect();
+		// mSocketConnection = null;
+		// }
+
+		getBluetoothManager().closeBluetooth(); // 关闭 蓝牙
+	}
 
 }

@@ -5,17 +5,18 @@ import android.util.Log;
 
 import com.yixin.monitors.sdk.api.ApiMonitor;
 import com.yixin.monitors.sdk.api.BluetoothListener;
+import com.yixin.monitors.sdk.bluetooth.BluetoothSocketConnection;
 import com.yixin.monitors.sdk.bluetooth.MindrayBluetoothConnection;
 import com.yixin.monitors.sdk.mindray.parser.CMSControl;
 import com.yixin.monitors.sdk.model.DeviceInfo;
 
 public class MindrayMonitor implements ApiMonitor {
-	public static String					DEVICE_NAME	= "mindray-ubicare";
-	public static String					DEVICE_PIN	= "4321";
-	private static final String				Tag			= "MindrayMonitor";
-	protected Context						mContext;
-	protected MindrayBluetoothConnection	mConnection;
-	protected BluetoothListener				mBluetoothListener;
+	public static String DEVICE_NAME = "mindray-ubicare";
+	public static String DEVICE_PIN = "4321";
+	private static final String Tag = "MindrayMonitor";
+	protected Context mContext;
+	protected MindrayBluetoothConnection mConnection;
+	protected BluetoothListener mBluetoothListener;
 
 	public MindrayMonitor(Context context) {
 		this.mContext = context;
@@ -37,8 +38,18 @@ public class MindrayMonitor implements ApiMonitor {
 		if (mConnection == null) {
 			mConnection = new MindrayBluetoothConnection(mContext,
 					getDeviceInfo(), mBluetoothListener);
-			CMSControl mDataParser = new CMSControl(
-					mConnection.getBluetoothSendableInterface());
+			BluetoothSocketConnection socketConnection = mConnection
+					.getBluetoothSocketConnection();
+			socketConnection
+					.setBluetoothSocketChangeListener(new BluetoothSocketConnection.BluetoothSocketChangeListener() {
+
+						@Override
+						public void onBluetoothDisconnect() {
+							disconnect();
+						}
+					});
+
+			CMSControl mDataParser = new CMSControl(socketConnection);
 			mConnection.setDataParser(mDataParser);
 		}
 
@@ -48,6 +59,7 @@ public class MindrayMonitor implements ApiMonitor {
 	@Override
 	public void disconnect() {
 		if (mConnection != null) {
+			Log.i(Tag, "MindrayMonitor已经断开");
 			mConnection.disconnect();
 			mConnection = null;
 			System.gc();
@@ -56,7 +68,8 @@ public class MindrayMonitor implements ApiMonitor {
 
 	@Override
 	public boolean isConnected() {
-		if (mConnection == null) return false;
+		if (mConnection == null)
+			return false;
 		return mConnection.isConnected();
 	}
 
@@ -65,7 +78,7 @@ public class MindrayMonitor implements ApiMonitor {
 		this.mBluetoothListener = listener;
 	}
 
-	private DeviceInfo	mDeviceInfo;
+	private DeviceInfo mDeviceInfo;
 
 	@Override
 	public DeviceInfo getDeviceInfo() {
