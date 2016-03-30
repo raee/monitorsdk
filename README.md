@@ -49,3 +49,6 @@ B、JNI库<br>
 		}
 		mindrayApi.disconnect(); // 断开连接
 
+
+##开源协议
+[GPL](http://www.gnu.org/licenses/licenses.en.html)
